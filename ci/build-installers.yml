@@ -1,0 +1,186 @@
+name: Build K-Tunes installers
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android APK and tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: android/**/*.gradle*
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Use preinstalled Android SDK
+        run: echo "ANDROID_HOME=$ANDROID_HOME"
+      - name: Install Android SDK 35
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          fi
+          test -n "$SDKMANAGER" && test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+      - name: Unit tests and APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug
+          python -m unittest discover -s tests -v
+      - name: Prepare release signing
+        if: github.event_name != 'pull_request'
+        env:
+          KEYSTORE_B64: ${{ secrets.KTUNES_RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KTUNES_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KTUNES_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KTUNES_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "Release signing not configured; skipping public release APK."
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/ktunes-release.jks"
+          echo "KTUNES_RELEASE_KEYSTORE=$RUNNER_TEMP/ktunes-release.jks" >> "$GITHUB_ENV"
+          echo "KTUNES_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "KTUNES_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "KTUNES_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+      - name: Build and verify signed release APK
+        if: env.KTUNES_RELEASE_KEYSTORE != ''
+        run: |
+          ./gradlew --no-daemon assembleRelease
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          mkdir -p dist/release
+          cp "$APK" dist/release/K-Tunes-release.apk
+          cd dist/release
+          sha256sum K-Tunes-release.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v5
+        if: env.KTUNES_RELEASE_KEYSTORE != ''
+        with:
+          name: K-Tunes-Android-signed-release
+          path: android/dist/release/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v5
+        with:
+          name: K-Tunes-Android-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  windows:
+    name: Windows tests and installer
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: desktop/requirements-build.txt
+      - name: Dependencies
+        shell: pwsh
+        run: |
+          python -m pip install -r requirements-build.txt
+          ./prepare_dependencies.ps1
+      - name: Playback regression tests
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m unittest discover -s tests -v
+      - name: Package executable
+        shell: pwsh
+        run: |
+          python -m PyInstaller --clean --noconfirm KaosTunes.spec
+          python collect_licenses.py --destination dist/licenses
+          Copy-Item THIRD_PARTY_NOTICES.txt dist/THIRD_PARTY_NOTICES.txt
+          New-Item -ItemType Directory -Force dist/licenses/chromaprint | Out-Null
+          Copy-Item vendor/fpcalc/LICENSE.md dist/licenses/chromaprint/
+          Copy-Item vendor/fpcalc/COPYING.LGPL-2.1.txt dist/licenses/chromaprint/
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Kaos-Tunes-Windows-installer
+          path: desktop/dist/installer/*.exe
+          if-no-files-found: error
+
+  linux:
+    name: Linux tests and DEB installer
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Linux GUI libraries
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-xinerama0 libasound2-dev libpulse0 desktop-file-utils
+      - name: Dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Regression tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m unittest discover -s tests -v
+      - name: Build DEB
+        run: bash build_linux_deb.sh
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Kaos-Tunes-Linux-deb
+          path: desktop/dist/linux/*.deb
+          if-no-files-found: error
+
+  macos:
+    name: macOS tests and DMG installer
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: desktop/requirements-build.txt
+      - name: Dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Regression tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m unittest discover -s tests -v
+      - name: Build macOS application and DMG
+        run: bash build_macos.sh
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Kaos-Tunes-macOS-dmg
+          path: desktop/dist/macos/*.dmg
+          if-no-files-found: error
+

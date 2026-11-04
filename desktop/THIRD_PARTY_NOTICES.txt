@@ -1,0 +1,29 @@
+Kaos Tunes 2.3.1, third-party notices
+======================================
+
+The Windows build bundles Chromaprint fpcalc 1.6.1 for optional AcoustID
+fingerprinting. The official 64-bit Windows binary is downloaded from the
+AcoustID/Chromaprint GitHub release and verified before packaging with this
+SHA-256 digest:
+
+735d6182b38e9f364b84ce6f4ccd682c75e2851de89735711d6b762d12b92a4e
+
+Chromaprint home and source:
+https://acoustid.org/chromaprint
+https://github.com/acoustid/chromaprint/tree/v1.6.1
+
+Chromaprint's own source is MIT licensed. The distributed fpcalc package is
+treated as LGPL-2.1-or-later because it includes or links FFmpeg components.
+The upstream LICENSE.md and full LGPL 2.1 text are packaged alongside fpcalc.
+The upstream license is also
+available at:
+https://github.com/acoustid/chromaprint/blob/v1.6.1/LICENSE.md
+
+PyQt6, Qt 6, Mutagen, PyInstaller, Pillow, and their applicable license files
+are installed from their published Python packages during the Windows build.
+PyInstaller collects the Python runtime and required package binaries into the
+application. Their projects retain their respective copyrights and licenses.
+
+Online metadata may be obtained from MusicBrainz, AcoustID, and the Cover Art
+Archive. Their data and artwork remain subject to the terms and rights stated
+by those services and by the applicable artists and labels.

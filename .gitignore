@@ -1,0 +1,26 @@
+# Python environments and generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Local editors and OS metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build output and machine-local Android configuration
+build/
+dist/
+.gradle/
+local.properties
+*.apk
+*.aab
+*.log
+
+# Signing keys stay local
+*.jks
+*.keystore

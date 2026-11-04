@@ -1,0 +1,21 @@
+K-Tunes Android 0.1.1
+Copyright 2026 Kaotick Jay / Kaosium Interactive
+
+Portable metadata and artwork lookup engine reused from KaosTunes 2.3.1.
+
+Redistributed components:
+- AndroidX Media3 ExoPlayer, HLS and MediaSession 1.5.1: Apache License 2.0.
+- AndroidX DocumentFile 1.0.1 and transitive AndroidX libraries: Apache License 2.0.
+- Guava Android / ListenableFuture and annotations: Apache License 2.0.
+- Chaquopy 16.1.0, copyright Chaquopy contributors: MIT License.
+- CPython 3.12 runtime, copyright Python Software Foundation: PSF License.
+  The Python runtime includes OpenSSL (Apache License 2.0), libffi (MIT),
+  SQLite (public domain), zlib (zlib license), bzip2 and xz/liblzma.
+  Runtime notices are supplied in the component distributions and project.
+
+License texts are included under assets/licenses in the APK and source project.
+The desktop PyQt6, Qt and Windows Chromaprint executable are not included.
+
+MusicBrainz and Cover Art Archive are optional external metadata services.
+No audio is uploaded. Requests contain the selected title, artist and duration.
+Online results update the local catalog and do not edit the source audio file.

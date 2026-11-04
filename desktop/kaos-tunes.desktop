@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Plague’s Jukebox
+GenericName=Media Player
+Comment=Play music, videos and playlists
+Exec=/usr/bin/kaos-tunes %F
+Icon=plagues-jukebox
+Terminal=false
+Categories=AudioVideo;Audio;Video;Player;
+MimeType=audio/mpeg;audio/vnd.wave;audio/x-wav;audio/flac;audio/x-flac;audio/ogg;audio/x-vorbis+ogg;audio/x-opus+ogg;audio/mp4;audio/x-m4a;audio/aac;audio/x-ms-wma;audio/x-aiff;audio/x-mpegurl;application/vnd.apple.mpegurl;video/mp4;video/x-m4v;video/x-matroska;video/webm;video/quicktime;video/x-msvideo;video/x-ms-wmv;video/mpeg;video/ogg;video/3gpp;

@@ -1,0 +1,9 @@
+# Kaos Tunes runtime dependencies
+# PyQt6 installs its matching PyQt6-Qt6 runtime automatically.
+# Online lookup uses Python's standard library. The verified Windows fpcalc
+# executable is included under vendor/fpcalc and bundled by PyInstaller.
+PyQt6>=6.8,<7
+mutagen>=1.47,<2
+
+# MIT-licensed Python bindings; VLC/libVLC installed separately by user.
+python-vlc>=3.0.21203,<4
