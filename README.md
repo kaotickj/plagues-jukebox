@@ -55,8 +55,8 @@ file manager/browser only as needed. The verified release APK uses the existing
 Android signing identity; debug APKs generally cannot replace a release-signed
 installation. No Google Play account is required for sideloading.
 
-No release is published by this snapshot. Publication is pending the repository
-privacy audit and verification of the corrected Linux license-file packaging described below.
+The public-source privacy audit is complete. Release artifacts are verified
+separately before publication; their build provenance is documented with each release.
 
 ## Play radio
 
@@ -96,8 +96,7 @@ The application source is [GPL-3.0](LICENSE). Bundled dependencies retain their
 own licenses; see [third-party notices](desktop/THIRD_PARTY_NOTICES.txt),
 `desktop/vendor/fpcalc/`, and `android/app/src/main/assets/licenses/`.
 
-**Packaging verification pending:** the current Linux DEB includes
-`THIRD_PARTY_NOTICES.txt` but omits the application's GPL license text and the
-bundled dependency license files. The corrected build recipe now collects those files; its rebuilt package must
-pass content checks before publication. The source snapshot retains the application
-license and existing dependency notices; this does not cure the DEB omission.
+The Linux package recipe includes the application GPL text, Python package licenses,
+and distribution copyright/common-license texts for bundled native libraries.
+The corrected local package was rebuilt and inspected after the earlier CI DEB
+was found to omit those files. That earlier incomplete DEB is not a release asset.

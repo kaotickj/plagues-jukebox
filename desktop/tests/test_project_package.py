@@ -16,7 +16,7 @@ class ProjectPackageTests(unittest.TestCase):
         self.assertIn('APP_VERSION = "2.3.1"', player)
         self.assertIn('version="2.3.1"', setup)
         self.assertIn("filevers=(2, 3, 1, 0)", version_info)
-        self.assertIn("# Kaos Tunes 2.3.1", readme)
+        self.assertIn("# Plague’s Jukebox desktop — 2.3.1", readme)
 
     def test_bundled_fpcalc_matches_verified_release_binary(self):
         fpcalc = PROJECT / "vendor" / "fpcalc" / "fpcalc.exe"

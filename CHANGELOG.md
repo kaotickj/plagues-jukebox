@@ -20,8 +20,8 @@ records the initial Plague’s Jukebox snapshot rather than inventing a version 
 - Added stream/runtime regression checks and an isolated packaged Linux smoke check.
 - Updated build assets and documentation for the new name.
 - Added Linux application/dependency license collection to the package recipe after
-  verification found the earlier DEB omitted those files. A rebuilt package must
-  pass content checks before publication.
+  verification found the earlier DEB omitted those files. The corrected package was rebuilt locally and passed
+  content checks before publication.
 
 ### Features carried forward
 

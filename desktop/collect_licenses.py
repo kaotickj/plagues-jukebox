@@ -23,6 +23,7 @@ def collect_distribution_licenses(destination: Path) -> list[Path]:
     for distribution_name in DISTRIBUTIONS:
         distribution = importlib.metadata.distribution(distribution_name)
         component = destination / _safe_name(distribution_name)
+        count_before = len(copied)
         for relative in distribution.files or []:
             basename = Path(str(relative)).name.lower()
             if not basename.startswith(LICENSE_PREFIXES):
@@ -34,6 +35,15 @@ def collect_distribution_licenses(destination: Path) -> list[Path]:
             target_name = _safe_name(str(relative).replace("\\", "__").replace("/", "__"))
             target = component / target_name
             shutil.copy2(source, target)
+            copied.append(target)
+        if len(copied) == count_before:
+            distro_package = {"PyQt6": "python3-pyqt6", "mutagen": "python3-mutagen"}.get(distribution_name)
+            fallback = Path("/usr/share/doc") / (distro_package or "missing") / "copyright"
+            if not fallback.is_file():
+                raise RuntimeError("No license files found for " + distribution_name)
+            component.mkdir(parents=True, exist_ok=True)
+            target = component / "copyright"
+            shutil.copy2(fallback, target)
             copied.append(target)
     return copied
 

@@ -48,8 +48,8 @@ bash build_linux_deb.sh
 ```
 
 The package is written to `dist/linux/`. The source version remains 2.3.1. The
-license-file packaging fix recorded in the project README must pass fresh
-package-content checks before publishing this DEB.
+license-file packaging fix recorded in the project README passed a fresh local
+build and package-content checks.
 
 ## Windows installer
 

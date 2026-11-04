@@ -36,6 +36,9 @@ def main():
         folder = destination / package
         folder.mkdir(exist_ok=True)
         shutil.copy2(source, folder / 'copyright')
+    common = Path('/usr/share/common-licenses')
+    if common.is_dir():
+        shutil.copytree(common, destination / 'common-licenses', dirs_exist_ok=True)
     (destination / 'packages.txt').write_text('\n'.join(sorted(packages)) + '\n')
     print('Collected native copyright notices for', len(packages), 'packages')
 
